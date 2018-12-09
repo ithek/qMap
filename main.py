@@ -221,7 +221,7 @@ class QGoogleMap(QtWebKitWidgets.QWebView):
             return None
         return self.addMarker(location, latitude, longitude, **extra)
 
-    @QtCore.pyqtSlot(float, float)
+    '''@QtCore.pyqtSlot(float, float)
     def mapIsMoved(self, lat, lng):
         self.mapMoved.emit(lat, lng)
 
@@ -252,7 +252,7 @@ class QGoogleMap(QtWebKitWidgets.QWebView):
 
     @QtCore.pyqtSlot(str, float, float)
     def markerIsDoubleClicked(self, key, lat, lng):
-        self.markerDoubleClicked.emit(key, lat, lng)
+        self.markerDoubleClicked.emit(key, lat, lng)'''
 
     def runScript(self, script):
         return self.page().mainFrame().evaluateJavaScript(script)
