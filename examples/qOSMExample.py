@@ -3,17 +3,10 @@
 import sys
 sys.path.insert(0, "../")
 
-import qOSM
-qOSM.use("PyQt4")
-
 from qOSM.common import QOSM
 
-if qOSM.get_backed() == "PyQt5":
-    from PyQt5.QtCore import *
-    from PyQt5.QtWidgets import *
-elif qOSM.get_backed() == "PyQt4":
-    from PyQt4.QtCore import *
-    from PyQt4.QtGui import *
+from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
 
 
 if __name__ == '__main__':
@@ -37,19 +30,18 @@ if __name__ == '__main__':
         coordsEdit.setText("{}, {}".format(latitude, longitude))
 
 
-    def onMarkerRClick(key):
+    def onMarkerRClick(key, latitude, longitude):
         print("RClick on ", key)
         # map.setMarkerOptions(key, draggable=False)
 
 
-    def onMarkerLClick(key):
+    def onMarkerLClick(key, latitude, longitude):
         print("LClick on ", key)
 
 
-    def onMarkerDClick(key):
+    def onMarkerDClick(key, latitude, longitude):
         print("DClick on ", key)
         # map.setMarkerOptions(key, draggable=True)
-
 
     def onMapMoved(latitude, longitude):
         print("Moved to ", latitude, longitude)
@@ -76,14 +68,16 @@ if __name__ == '__main__':
     l.addRow('Coords:', coordsEdit)
     coordsEdit.editingFinished.connect(goCoords)
     map = QOSM(w)
-    map.mapMoved.connect(onMapMoved)
-    map.markerMoved.connect(onMarkerMoved)
-    map.mapClicked.connect(onMapLClick)
-    map.mapDoubleClicked.connect(onMapDClick)
-    map.mapRightClicked.connect(onMapRClick)
-    map.markerClicked.connect(onMarkerLClick)
-    map.markerDoubleClicked.connect(onMarkerDClick)
-    map.markerRightClicked.connect(onMarkerRClick)
+
+    map.mapMovedCallback = onMapMoved
+    map.markerMovedCallback = onMarkerMoved
+    map.mapClickedCallback = onMapLClick
+    map.mapDoubleClickedCallback = onMapDClick
+    map.mapRightClickedCallback = onMapRClick
+    map.markerClickedCallback = onMarkerLClick
+    map.markerDoubleClickedCallback = onMarkerDClick
+    map.markerRightClickedCallback = onMarkerRClick
+
     h.addWidget(map)
     map.setSizePolicy(
         QSizePolicy.MinimumExpanding,
@@ -95,14 +89,15 @@ if __name__ == '__main__':
     map.centerAt(-12.0464, -77.0428)
     map.setZoom(12)
     # Many icons at: https://sites.google.com/site/gmapsdevelopment/
-    coords = map.center()
+    #coords = map.center()
+    coords = -12.0464, -77.0428 + 0.1
     map.addMarker("MyDragableMark", *coords, **dict(
         icon="http://maps.gstatic.com/mapfiles/ridefinder-images/mm_20_gray.png",
         draggable=True,
         title="Move me MyDragableMark!"
     ))
 
-    coords = coords[0] + 0.1, coords[1] + 0.1
+    coords = -12.0464 + 0.1, -77.0428 + 0.1
     map.addMarker("MyDragableMark2", *coords, **dict(
         icon="http://maps.gstatic.com/mapfiles/ridefinder-images/mm_20_red.png",
         draggable=True,

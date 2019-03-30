@@ -15,8 +15,19 @@ function initialize() {
         attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
 
-    if (typeof qtWidget !== 'undefined') {
+    LeafIcon = L.Icon.extend({
+        options: {
+            shadowUrl: 'leaf-shadow.png',
+            iconSize: [38, 95],
+            shadowSize: [50, 64],
+            iconAnchor: [22, 94],
+            shadowAnchor: [4, 62],
+            popupAnchor: [-3, -76]
+        }
+    });
 
+    new QWebChannel(qt.webChannelTransport, function (channel) {
+        window.qtWidget = channel.objects.qtWidget;
         map.on('dragend', function () {
             center = map.getCenter();
             qtWidget.mapMoved(center.lat, center.lng);
@@ -33,17 +44,6 @@ function initialize() {
         map.on('contextmenu', function (ev) {
             qtWidget.mapRightClicked(ev.latlng.lat, ev.latlng.lng);
         });
-    }
-
-    LeafIcon = L.Icon.extend({
-        options: {
-            shadowUrl: 'leaf-shadow.png',
-            iconSize: [38, 95],
-            shadowSize: [50, 64],
-            iconAnchor: [22, 94],
-            shadowAnchor: [4, 62],
-            popupAnchor: [-3, -76]
-        }
     });
 }
 
@@ -76,29 +76,26 @@ function osm_addMarker(key, latitude, longitude, parameters) {
 
     var marker = L.marker([latitude, longitude], parameters).addTo(map);
 
-    if (typeof qtWidget !== 'undefined') {
+    marker.on('dragend', function (event) {
+        var marker = event.target;
+        qtWidget.markerMoved(key, marker.getLatLng().lat, marker.getLatLng().lng);
+    });
 
-        marker.on('dragend', function (event) {
-            var marker = event.target;
-            qtWidget.markerMoved(key, marker.getLatLng().lat, marker.getLatLng().lng);
-        });
+    marker.on('click', function (event) {
+        var marker = event.target;
+        //marker.bindPopup(parameters["title"]);
+        qtWidget.markerClicked(key, marker.getLatLng().lat, marker.getLatLng().lng);
+    });
 
-        marker.on('click', function (event) {
-            var marker = event.target;
-            //marker.bindPopup(parameters["title"]);
-            qtWidget.markerClicked(key, marker.getLatLng().lat, marker.getLatLng().lng);
-        });
+    marker.on('dbclick', function (event) {
+        var marker = event.target;
+        qtWidget.markerDoubleClicked(key, marker.getLatLng().lat, marker.getLatLng().lng);
+    });
 
-        marker.on('dbclick', function (event) {
-            var marker = event.target;
-            qtWidget.markerClicked(key, marker.getLatLng().lat, marker.getLatLng().lng);
-        });
-
-        marker.on('contextmenu', function (event) {
-            var marker = event.target;
-            qtWidget.markerRightClicked(key, marker.getLatLng().lat, marker.getLatLng().lng);
-        });
-    }
+    marker.on('contextmenu', function (event) {
+        var marker = event.target;
+        qtWidget.markerRightClicked(key, marker.getLatLng().lat, marker.getLatLng().lng);
+    });
 
     markers[key] = marker;
     return key;
